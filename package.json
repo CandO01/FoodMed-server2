@@ -1,0 +1,15 @@
+{
+  "name": "foodmed-server",
+  "version": "1.0.0",
+  "description": "server that handles post request from users",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Foodmed App",
+  "license": "ISC",
+  "dependencies": {
+    "uuid": "^11.1.0"
+  }
+}
