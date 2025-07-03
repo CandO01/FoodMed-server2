@@ -1,11 +1,74 @@
 [
   {
-    "id": 1751434340263,
+    "id": 1751489957077,
     "foodName": "Mango",
-    "description": "Ripe mango",
-    "quantity": "3",
-    "expiryDate": "2026-07-20",
-    "location": "Ayobo",
-    "imageUrl": "/uploads/1fb41d6c-dea9-4ad9-b981-986366025274-mango.png.jpg"
+    "description": "Fresh ripe mango for your consumption",
+    "quantity": "10",
+    "expiryDate": "2025-12-12",
+    "location": "Ibadan",
+    "imageUrl": "/uploads/91d99885-a909-4ed0-9a37-12c212f00653-mango.png.jpg"
+  },
+  {
+    "id": 1751490295900,
+    "foodName": "Tomato",
+    "description": "Baskets of tomato for exchange",
+    "quantity": "20",
+    "expiryDate": "2025-12-10",
+    "location": "Ketu",
+    "imageUrl": "/uploads/13003879-8eca-4de6-ad41-e223d6539f0e-tomato.jfif"
+  },
+  {
+    "id": 1751493165398,
+    "foodName": "banana",
+    "description": "Fresh and sweet banana",
+    "quantity": "23",
+    "expiryDate": "2025-12-12",
+    "location": "Lagos",
+    "imageUrl": "/uploads/a8247974-9bd9-450d-8a27-486f846a167d-banaba.png"
+  },
+  {
+    "id": 1751493469461,
+    "foodName": "Rice",
+    "description": "Bag of parboiled rice",
+    "quantity": "23",
+    "expiryDate": "2029-12-12",
+    "location": "Badagry",
+    "imageUrl": "/uploads/1325a7de-0dda-41bd-bbb3-ee2c2a85181c-bagofrice.jpg"
+  },
+  {
+    "id": 1751494592641,
+    "foodName": "Yam",
+    "description": "Fresh yam from farm",
+    "quantity": "200 tubers",
+    "expiryDate": "2039-12-20",
+    "location": "Niger state",
+    "imageUrl": "/uploads/6658e7cb-a50c-4ee7-8cd7-c4a55ff5f1a7-yam.png"
+  },
+  {
+    "id": 1751494896057,
+    "foodName": "Crates of egg",
+    "description": "Good and high quality eggs",
+    "quantity": "100 crates",
+    "expiryDate": "2025-12-12",
+    "location": "Ikorodu",
+    "imageUrl": "/uploads/9c6a8d6a-63ea-494e-9fa4-0e2b47eee0c1-egg_PNG24-600x386.png"
+  },
+  {
+    "id": 1751495043838,
+    "foodName": "Rice",
+    "description": "50 kg bag of rice",
+    "quantity": "200",
+    "expiryDate": "2026-12-12",
+    "location": "Abuja",
+    "imageUrl": "/uploads/0726d2db-eb07-4a88-9e83-fb4c42aaebd6-bagofrice.jpg"
+  },
+  {
+    "id": 1751496194686,
+    "foodName": "Mango",
+    "description": "Green riped fresh mango",
+    "quantity": "40",
+    "expiryDate": "2025-07-12",
+    "location": "Ketu",
+    "imageUrl": "/uploads/d47d5b37-f7e6-49f4-a936-d9482122e2fe-mango.png.jpg"
   }
 ]
