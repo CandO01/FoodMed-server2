@@ -70,5 +70,14 @@
     "expiryDate": "2025-07-12",
     "location": "Ketu",
     "imageUrl": "/uploads/d47d5b37-f7e6-49f4-a936-d9482122e2fe-mango.png.jpg"
+  },
+  {
+    "id": 1751508831740,
+    "foodName": "Tomato",
+    "description": "Fresh tomatoes from the field",
+    "quantity": "200 baskets",
+    "expiryDate": "2025-09-06",
+    "location": "Benue",
+    "imageUrl": "/uploads/b26ac468-2295-42e9-922f-3c2ea2305fa1-tomato.jfif"
   }
 ]

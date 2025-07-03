@@ -1,5 +1,6 @@
 //LATEST VERSION OF THE SERVER
 // 🚀 COMPLETE SERVER WITH PATCH + EMAIL + SMS NOTIFICATION
+// server.js
 import http from 'node:http'
 import path from 'node:path'
 import fs from 'node:fs'
@@ -7,6 +8,9 @@ import { fileURLToPath } from 'url'
 import { v4 as uuidv4 } from 'uuid'
 import nodemailer from 'nodemailer'
 import twilio from 'twilio'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -16,20 +20,20 @@ const uploadDir = path.join(__dirname, 'uploads')
 const submissionsFile = path.join(uploadDir, 'submissions.json')
 const requestsFile = path.join(uploadDir, 'requests.json')
 
-// Twilio Setup
-const twilioClient = twilio('AC6d0d761e8804b84ecb555abff328b44e', '6a62ceff9bcbbc790ec77ac5e34421f1')
-const twilioFrom = '+15706846824'
+const twilioClient = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+)
+const twilioFrom = process.env.TWILIO_PHONE
 
-// Nodemailer Setup
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'caroline.mato1@gmail.com',
-    pass: 'yparsdmabbtvriiw'
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASS
   }
 })
 
-// Ensure required files/folders exist
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir)
 if (!fs.existsSync(submissionsFile)) fs.writeFileSync(submissionsFile, JSON.stringify([]))
 if (!fs.existsSync(requestsFile)) fs.writeFileSync(requestsFile, JSON.stringify([]))
@@ -50,45 +54,38 @@ function parseJSONBody(req, callback) {
 function parseMultipart(req, callback) {
   const boundary = req.headers['content-type'].split('boundary=')[1]
   const buffers = []
-
   req.on('data', chunk => buffers.push(chunk))
   req.on('end', () => {
     const rawData = Buffer.concat(buffers).toString('latin1')
     const parts = rawData.split(`--${boundary}`)
     const fields = {}
     let imagePath = null
-
     for (const part of parts) {
       if (!part.includes('Content-Disposition')) continue
-
       const nameMatch = part.match(/name="([^"]+)"/)
       const name = nameMatch?.[1]
       const filenameMatch = part.match(/filename="([^"]+)"/)
       const contentTypeMatch = part.match(/Content-Type: (.+)/)
-
       const start = part.indexOf('\r\n\r\n')
       const rawBody = part.slice(start + 4, part.lastIndexOf('\r\n'))
-
       if (filenameMatch && contentTypeMatch && name === 'image') {
         const filename = filenameMatch[1]
         const buffer = Buffer.from(rawBody, 'latin1')
         const uniqueName = `${uuidv4()}-${filename}`
         const filePath = path.join(uploadDir, uniqueName)
-
         fs.writeFileSync(filePath, buffer)
         imagePath = `/uploads/${uniqueName}`
       } else if (name) {
         fields[name] = rawBody.trim()
       }
     }
-
     callback(fields, imagePath)
   })
 }
 
 const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
   res.setHeader('Content-Type', 'application/json')
 
@@ -97,7 +94,6 @@ const server = http.createServer((req, res) => {
     return res.end()
   }
 
-  // POST /submit
   if (req.method === 'POST' && req.url === '/submit') {
     if (req.headers['content-type']?.includes('multipart/form-data')) {
       parseMultipart(req, (fields, imagePath) => {
@@ -105,11 +101,9 @@ const server = http.createServer((req, res) => {
         try {
           data = JSON.parse(fs.readFileSync(submissionsFile))
         } catch {}
-
         const newEntry = { id: Date.now(), ...fields, imageUrl: imagePath }
         data.push(newEntry)
         fs.writeFileSync(submissionsFile, JSON.stringify(data, null, 2))
-
         res.writeHead(201)
         res.end(JSON.stringify({ message: 'Saved', data: newEntry }))
       })
@@ -118,13 +112,11 @@ const server = http.createServer((req, res) => {
       res.end('Invalid content type')
     }
 
-  // GET /submissions
   } else if (req.method === 'GET' && req.url === '/submissions') {
     const data = fs.readFileSync(submissionsFile)
     res.writeHead(200)
     res.end(data)
 
-  // GET /uploads/:filename
   } else if (req.method === 'GET' && req.url.startsWith('/uploads/')) {
     const imageName = req.url.split('/uploads/')[1]
     const filePath = path.join(uploadDir, path.basename(imageName))
@@ -142,7 +134,6 @@ const server = http.createServer((req, res) => {
       res.end(content)
     })
 
-  // POST /request
   } else if (req.method === 'POST' && req.url === '/request') {
     parseJSONBody(req, (err, body) => {
       if (err) return res.writeHead(400).end(JSON.stringify({ error: 'Invalid JSON' }))
@@ -159,29 +150,18 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({ message: 'Request received', data: newRequest }))
     })
 
-  // GET /requests
   } else if (req.method === 'GET' && req.url === '/requests') {
     const data = fs.readFileSync(requestsFile)
     res.writeHead(200)
     res.end(data)
 
-  // PATCH /request/update/:id
   } else if (req.method === 'PATCH' && req.url.startsWith('/request/update/')) {
     const requestId = req.url.split('/').pop()
     parseJSONBody(req, async (err, body) => {
-      if (err) {
-        res.writeHead(400)
-        return res.end(JSON.stringify({ error: 'Invalid JSON' }))
-      }
-
+      if (err) return res.writeHead(400).end(JSON.stringify({ error: 'Invalid JSON' }))
       let data = JSON.parse(fs.readFileSync(requestsFile))
       const index = data.findIndex(r => r.id === requestId)
-
-      if (index === -1) {
-        res.writeHead(404)
-        return res.end(JSON.stringify({ error: 'Request not found' }))
-      }
-
+      if (index === -1) return res.writeHead(404).end(JSON.stringify({ error: 'Request not found' }))
       data[index].status = 'confirmed'
       data[index].confirmedAt = new Date().toISOString()
       data[index].confirmationDetails = {
@@ -189,37 +169,37 @@ const server = http.createServer((req, res) => {
         time: body.time,
         location: body.location
       }
-
       fs.writeFileSync(requestsFile, JSON.stringify(data, null, 2))
-
-      // Send email
       transporter.sendMail({
-        from: 'caroline.mato1@gmail.com',
+        from: process.env.EMAIL,
         to: data[index].email,
         subject: '✅ Your Food Request is Confirmed!',
-        text: `Hello, your request for ${data[index].foodName} has been confirmed for ${body.date} at ${body.time} in ${body.location}. This message is from FoodMed.`,
+        text: `Hello, your request for ${data[index].foodName} has been confirmed for ${body.date} at ${body.time} in ${body.location}. This message is from FoodMed.`
       }, (err, info) => {
         if (err) console.error('✉️ Email error:', err)
         else console.log('✉️ Email sent:', info.response)
       })
-
-      // Send SMS if phone number exists
       if (data[index].phone) {
-        twilioClient.messages
-          .create({
-            body: `FoodMed: Your request for ${data[index].foodName} is confirmed for ${body.date}, ${body.time} at ${body.location}.`,
-            from: twilioFrom,
-            to: data[index].phone
-          })
-          .then(msg => console.log('📱 SMS sent:', msg.sid))
+        twilioClient.messages.create({
+          body: `FoodMed: Your request for ${data[index].foodName} is confirmed for ${body.date}, ${body.time} at ${body.location}.`,
+          from: twilioFrom,
+          to: data[index].phone
+        }).then(msg => console.log('📱 SMS sent:', msg.sid))
           .catch(err => console.error('📱 SMS error:', err))
-      } else {
-        console.warn(`⚠️ No phone number provided for request ID ${requestId}. SMS not sent.`)
       }
-
       res.writeHead(200)
       res.end(JSON.stringify({ message: 'Request confirmed and user notified' }))
     })
+
+  } else if (req.method === 'DELETE' && req.url.startsWith('/request/delete/')) {
+    const requestId = req.url.split('/').pop()
+    let data = JSON.parse(fs.readFileSync(requestsFile, 'utf-8'))
+    const index = data.findIndex(req => req.id === requestId)
+    if (index === -1) return res.writeHead(404).end(JSON.stringify({ error: 'Request not found' }))
+    data.splice(index, 1)
+    fs.writeFileSync(requestsFile, JSON.stringify(data, null, 2))
+    res.writeHead(200)
+    res.end(JSON.stringify({ message: 'Request deleted successfully' }))
 
   } else {
     res.writeHead(404)
@@ -230,6 +210,7 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`)
 })
+
 
 
 
