@@ -7,7 +7,6 @@ import { fileURLToPath } from 'url'
 import { v4 as uuidv4 } from 'uuid'
 import nodemailer from 'nodemailer'
 import twilio from 'twilio'
-import { Server as SocketServer } from 'socket.io'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -235,17 +234,6 @@ const server = http.createServer((req, res) => {
   } else {
     res.writeHead(404).end(JSON.stringify({ error: 'Not Found' }))
   }
-})
-
-const io = new SocketServer(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  }
-})
-
-io.on('connection', (socket) => {
-  console.log('🔌 Socket connected:', socket.id)
 })
 
 server.listen(PORT, () => {
