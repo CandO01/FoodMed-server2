@@ -10,7 +10,9 @@
   "author": "Foodmed App",
   "license": "ISC",
   "dependencies": {
+    "cloudinary": "^2.7.0",
     "dotenv": "^17.0.1",
+    "multer": "^2.0.1",
     "nodemailer": "^7.0.4",
     "socket.io": "^4.8.1",
     "twilio": "^5.7.1",
